@@ -24,10 +24,7 @@ class CacheManager {
 
   static CacheManager _instance;
 
-  static Function _getDownloadUrl;
-
-  static Future<CacheManager> getInstance({Function getDownloadUrl}) async {
-    _getDownloadUrl = getDownloadUrl;
+  static Future<CacheManager> getInstance() async {
     if (_instance == null) {
       await _lock.synchronized(() async {
         if (_instance == null) {
@@ -220,12 +217,6 @@ class CacheManager {
       var filePath = await cacheObject.getFilePath();
       //If we have never downloaded this file, do download
       if (filePath == null) {
-        if (!url.contains(
-                'https://firebasestorage.googleapis.com/v0/b/max-towers.appspot.com') &&
-            !url.contains('&token')) {
-          url = await _getDownloadUrl(key);
-        }
-
         log = "$log\nDownloading for first time.";
         var newCacheData = await _downloadFile(url, headers, cacheObject.lock);
         if (newCacheData != null) {
