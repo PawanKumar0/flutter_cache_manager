@@ -125,17 +125,17 @@ class CacheManager {
 
   _getLastCleanTimestampFromPreferences() {
     // Get data about when the last clean action has been performed
-    var cleanMillis = _prefs.getInt(_keyCacheCleanDate);
-    if (cleanMillis != null) {
-      lastCacheClean = new DateTime.fromMillisecondsSinceEpoch(cleanMillis);
+    var cleanDate = _prefs.getString(_keyCacheCleanDate);
+    if (cleanDate != null) {
+      lastCacheClean = DateTime.parse(cleanDate);
     } else {
-      lastCacheClean = new DateTime.now();
-      _prefs.setInt(_keyCacheCleanDate, lastCacheClean.millisecondsSinceEpoch);
+      lastCacheClean = DateTime.now();
+      _prefs.setString(_keyCacheCleanDate, lastCacheClean.toUtc().toIso8601String());
     }
   }
 
   _cleanCache({force: false}) async {
-    var sinceLastClean = new DateTime.now().difference(lastCacheClean);
+    var sinceLastClean = DateTime.now().difference(lastCacheClean);
 
     if (force ||
         sinceLastClean > inBetweenCleans ||
@@ -144,15 +144,14 @@ class CacheManager {
         await _removeOldObjectsFromCache();
         await _shrinkLargeCache();
 
-        lastCacheClean = new DateTime.now();
-        _prefs.setInt(
-            _keyCacheCleanDate, lastCacheClean.millisecondsSinceEpoch);
+        lastCacheClean = DateTime.now();
+        _prefs.setString(_keyCacheCleanDate, lastCacheClean.toUtc().toIso8601String());
       });
     }
   }
 
   _removeOldObjectsFromCache() async {
-    var oldestDateAllowed = new DateTime.now().subtract(maxAgeCacheObject);
+    var oldestDateAllowed = DateTime.now().subtract(maxAgeCacheObject);
 
     //Remove old objects
     var oldValues = List.from(
